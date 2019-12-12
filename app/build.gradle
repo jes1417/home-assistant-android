@@ -26,7 +26,7 @@ android {
         minSdkVersion projectMinSdkVersion
         targetSdkVersion 29
         versionCode "${System.env.VERSION_CODE ?: 1}".toInteger()
-        versionName "1.0.0"
+        versionName "${System.env.VERSION_NAME ?: "1.0.0"}"
     }
 
     firebaseAppDistribution {
@@ -83,14 +83,17 @@ dependencies {
     kapt "com.google.dagger:dagger-compiler:${daggerVersion}"
 
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
-    implementation 'com.google.android.material:material:1.0.0'
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutversion"
+    implementation "androidx.preference:preference-ktx:1.1.0"
+    implementation 'com.google.android.material:material:1.0.0'
 
     implementation("com.jakewharton.threetenabp:threetenabp:$threeTenAbpVersion") {
         exclude group: 'org.threeten'
     }
 
     implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
+
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
 
     testImplementation "org.spekframework.spek2:spek-dsl-jvm:$spek2Version"
     testImplementation "org.spekframework.spek2:spek-runner-junit5:$spek2Version"
@@ -99,4 +102,6 @@ dependencies {
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
 }
 
+// This plugin must stay at the bottom
+// https://developers.google.com/android/guides/google-services-plugin
 apply plugin: 'com.google.gms.google-services'

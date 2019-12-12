@@ -11,6 +11,7 @@ import io.homeassistant.companion.android.DaggerPresenterComponent
 import io.homeassistant.companion.android.PresenterModule
 import io.homeassistant.companion.android.R
 import io.homeassistant.companion.android.common.dagger.GraphComponentAccessor
+import io.homeassistant.companion.android.util.PermissionManager
 import javax.inject.Inject
 
 class MobileAppIntegrationFragment : Fragment(), MobileAppIntegrationView {
@@ -53,16 +54,18 @@ class MobileAppIntegrationFragment : Fragment(), MobileAppIntegrationView {
             findViewById<Button>(R.id.retry).setOnClickListener {
                 presenter.onRegistrationAttempt()
             }
+
+            presenter.onRegistrationAttempt()
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        presenter.onRegistrationAttempt()
-    }
-
     override fun deviceRegistered() {
-        (activity as MobileAppIntegrationListener).onIntegrationRegistrationComplete()
+        if (!PermissionManager.haveLocationPermissions(context!!)) {
+            PermissionManager.requestLocationPermissions(this)
+        } else {
+            // If we have permission already we can just continue with
+            (activity as MobileAppIntegrationListener).onIntegrationRegistrationComplete()
+        }
     }
 
     override fun registrationSkipped() {
@@ -80,5 +83,19 @@ class MobileAppIntegrationFragment : Fragment(), MobileAppIntegrationView {
     override fun onDestroy() {
         presenter.onFinish()
         super.onDestroy()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (PermissionManager.validateLocationPermissions(requestCode, permissions, grantResults)) {
+            presenter.onGrantedLocationPermission(context!!, activity!!)
+        }
+
+        (activity as MobileAppIntegrationListener).onIntegrationRegistrationComplete()
     }
 }
